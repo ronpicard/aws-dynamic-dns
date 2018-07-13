@@ -15,8 +15,39 @@
 
 ## How:
 
-### Windows 10 Pro
-1. Install Node.js
-    - a. Download & install node 64-bit: https://nodejs.org/en/
-2. Add node to path
-    
+1. Update 
+    - a. sudo apt-get update
+2. Install Node.js
+    - a. sudo apt-get install -y nodejs
+3. Install node package manager (npm)
+    - a. sudo apt-get install -y npm
+4. Create a pacakge package.json file
+    - a. in git repo open terminal and type "npm init"
+    - b. name: dynamicdns
+    - c. version: 1.0.0
+    - d. description: Nodejs Script to update my DNS IP with Route53
+    - e. entry point: index.js
+    - f. test command: (leave blank)
+    - g. git repository: (this repo)
+    - h. keywords: (leave blank)
+    - i: author: (you)
+    - j: license: (ISC)
+    - Is this ok? Yes
+5. Install aws-sdk
+    - a. npm install aws-sdk
+6. Install net tools for ifconfig
+    - a. sudo apt install net-tools
+7. Install dnsutils
+    - a. sudo apt-get install dnsutils
+8. Install python pip
+    - a. sudo apt-get install awscli
+9. Instal AWS client & add to path
+    - a. cd ~/.local/bin
+    - b. export PATH=~/.local/bin:$PATH
+    - c. . ~/.profile
+    - d. aws --version (to verify)
+10. Make a user with credential access of rout53 access
+11. Put aws credentials in index.js
+12. Run with ZONE=foo.com. DOMAIN=foo.com node index.js
+
+

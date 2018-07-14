@@ -1,5 +1,6 @@
 'use strict';
 
+// acquire aws api instance
 const aws = require('aws-sdk');
 
 aws.config = new aws.Config();
@@ -15,7 +16,7 @@ const getHostedZoneDomainId = () => {
     route.listHostedZones({}, (err, data) => {
       if (!err) {
         const id = data.HostedZones
-          .filter(x => x.Name === process.env.ZONE)
+          .filter(x => x.Name === (process.env.DOMAIN + '.'))
           .map(x => x.Id)[0]
           .split('/')[2];
         resolve(id);
@@ -106,13 +107,27 @@ const updateDNS = (id, ip) => {
 };
 
 
-getHostedZoneDomainId().then(id => {
-  const digIp = getCurrentHomeIp();
-  getCurrentRecordSets(id).then(resourceRecordSets => {
-    resourceRecordSets.forEach(x => {
-      if (x.ResourceRecords[0].Value.trim() !== digIp.trim()) {
-        updateDNS(id, digIp);
-      }
+function repeat() {
+
+  getHostedZoneDomainId().then(id => {
+    const digIp = getCurrentHomeIp();
+    getCurrentRecordSets(id).then(resourceRecordSets => {
+      resourceRecordSets.forEach(x => {
+        console.log('DNSIP: ' + x.ResourceRecords[0].Value.trim())
+        console.log('CurrentIP: ' + x.ResourceRecords[0].Value.trim());
+        if (x.ResourceRecords[0].Value.trim() !== digIp.trim()) {
+          updateDNS(id, digIp);
+        }
+      });
     });
   });
-});
+  
+  // repeat time in seconds
+  var repeateTimeInSeconds = 30
+  var repeateTimeInMilliSeconds = repeateTimeInSeconds*1000
+
+  setTimeout(repeat, repeateTimeInMilliSeconds);
+}
+
+repeat();
+

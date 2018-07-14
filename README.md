@@ -48,6 +48,6 @@
     - d. aws --version (to verify)
 10. Make a user with credential access of rout53 access
 11. Put aws credentials in index.js
-12. Run with ZONE=foo.com. DOMAIN=foo.com node index.js
+12. Run with "DOMAIN=foo.com node index.js"
 
 

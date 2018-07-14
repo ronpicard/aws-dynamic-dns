@@ -10,13 +10,11 @@ const shell = require('child_process').spawnSync;
 
 const route = new aws.Route53();
 
-const getId = () => {
+const getHostedZoneDomainId = () => {
   return new Promise((resolve, reject) => {
     route.listHostedZones({}, (err, data) => {
       if (!err) {
-        console.log(data);
-        console.log(data.HostedZones.map(x => x.Name)[0]);
-        const id = data.HostedZones //.map(x => x.Id)[0].split('/')[2];
+        const id = data.HostedZones
           .filter(x => x.Name === process.env.ZONE)
           .map(x => x.Id)[0]
           .split('/')[2];
@@ -28,13 +26,12 @@ const getId = () => {
   });
 };
 
-const checkCurrentRecord = id => {
+const getCurrentRecordSets = id => {
   return new Promise((resolve, reject) => {
     route.listResourceRecordSets({ HostedZoneId: id }, (err, data) => {
       if (!err) {
-        data.ResourceRecordSets
-          .filter(x => x.Name === process.env.DOMAIN)
-          .forEach(x => resolve(x.ResourceRecords));
+        const resourceRecordSets = data.ResourceRecordSets.filter(x => x.TTL === 300);
+        resolve(resourceRecordSets)
       } else {
         reject(err);
       }
@@ -42,7 +39,7 @@ const checkCurrentRecord = id => {
   });
 };
 
-const getIp = () => {
+const getCurrentHomeIp = () => {
   const ip = shell('dig', [
     '+short',
     'myip.opendns.com',
@@ -52,7 +49,7 @@ const getIp = () => {
 };
 
 const updateDNS = (id, ip) => {
-  const params = {
+  const params1 = {
     ChangeBatch: {
       Changes: [
         {
@@ -72,7 +69,34 @@ const updateDNS = (id, ip) => {
     },
     HostedZoneId: id,
   };
-  route.changeResourceRecordSets(params, (err, data) => {
+  const params2 = {
+    ChangeBatch: {
+      Changes: [
+        {
+          Action: 'UPSERT',
+          ResourceRecordSet: {
+            Name: 'www.' + process.env.DOMAIN,
+            Type: 'A',
+            ResourceRecords: [
+              {
+                Value: ip,
+              },
+            ],
+            TTL: 300,
+          },
+        },
+      ],
+    },
+    HostedZoneId: id,
+  };
+  route.changeResourceRecordSets(params1, (err, data) => {
+    if (!err) {
+      console.log(data);
+    } else {
+      console.error(err);
+    }
+  });
+  route.changeResourceRecordSets(params2, (err, data) => {
     if (!err) {
       console.log(data);
     } else {
@@ -81,14 +105,14 @@ const updateDNS = (id, ip) => {
   });
 };
 
-getId().then(id => {
 
-  const digIp = getIp();
-
-
-  checkCurrentRecord(id).then(recordedIp => {
-    if (recordedIp[0].Value.trim() !== digIp.trim()) {
-      updateDNS(id, digIp);
-    }
+getHostedZoneDomainId().then(id => {
+  const digIp = getCurrentHomeIp();
+  getCurrentRecordSets(id).then(resourceRecordSets => {
+    resourceRecordSets.forEach(x => {
+      if (x.ResourceRecords[0].Value.trim() !== digIp.trim()) {
+        updateDNS(id, digIp);
+      }
+    });
   });
 });

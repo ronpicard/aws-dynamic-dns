@@ -1,0 +1,60 @@
+- name: SETUP_DYNAMIC_DNS
+  hosts: pi
+  tasks:
+
+    - name: "INSTALL_NODEJS"
+      apt:
+        name: nodejs
+        update_cache: yes
+      become: true
+      become_user: root
+
+    - name: "INSTALL_DNSUTILS"
+      apt:
+        name: dnsutils
+        update_cache: yes
+      become: true
+      become_user: root
+
+    - name: "INSTALL_NET_TOOLS"
+      apt:
+        name: net-tools
+        update_cache: yes
+      become: true
+      become_user: root
+
+    - name: "INSTALL_AWS_SCLIENT"
+      apt:
+        name: awscli
+        update_cache: yes
+      become: true
+      become_user: root
+
+    - name: "INSTALL_NODE_PACKAGE_MANAGER"
+      command: /bin/bash -c "cd /home/pi && npm install aws-sdk"
+      become: true
+      become_user: root
+
+    - name: "INSTALL_NODE_PACKAGE_MANAGER"
+      command: /bin/bash -c "cd ~/.local/bin && export PATH=~/.local/bin:$PATH && . ~/.profile"
+      become: true
+      become_user: root
+
+    - name: "COPY"
+      command: scp -o Port=22 index.js root@10.0.0.3:/home/pi
+      become: true
+      become_user: root
+
+    - lineinfile:
+        path: /etc/rc.local
+        line: '{{ item }}'
+        insertbefore: 'exit 0'
+      with_items:
+        - ''
+        - 'DOMAIN=foo.com node /home/pi/index.js &
+        - ''
+      become: true
+      become_user: root
+
+
+  

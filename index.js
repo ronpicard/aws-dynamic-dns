@@ -126,11 +126,10 @@ function repeat() {
   });
   
   // repeat time in seconds
-  var repeatTimeInMinutes = 5
-  var repeatTimeInSeconds = repeatTimeInMinutes*60
-  var repeatTimeInMilliSeconds = repeatTimeInSeconds*1000
+  var repeateTimeInSeconds = 30
+  var repeateTimeInMilliSeconds = repeateTimeInSeconds*1000
 
-  setTimeout(repeat, repeatTimeInMilliSeconds);
+  setTimeout(repeat, repeateTimeInMilliSeconds);
 }
 
 repeat();

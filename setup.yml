@@ -9,6 +9,13 @@
       become: true
       become_user: root
 
+    - name: "INSTALL_NPM"
+      apt:
+        name: npm
+        update_cache: yes
+      become: true
+      become_user: root
+
     - name: "INSTALL_DNSUTILS"
       apt:
         name: dnsutils
@@ -35,15 +42,15 @@
       become: true
       become_user: root
 
-    - name: "INSTALL_NODE_PACKAGE_MANAGER"
-      command: /bin/bash -c "cd ~/.local/bin && export PATH=~/.local/bin:$PATH && . ~/.profile"
-      become: true
-      become_user: root
+#    - name: "INSTALL_NODE_PACKAGE_MANAGER"
+#      command: /bin/bash -c "cd ~/.local/bin && export PATH=~/.local/bin:$PATH && . ~/.profile"
+#      become: true
+#      become_user: root
 
     - name: "COPY"
-      command: scp -o Port=22 index.js root@10.0.0.3:/home/pi
-      become: true
-      become_user: root
+      copy:
+        src: index.js
+        dest: /home/pi
 
     - lineinfile:
         path: /etc/rc.local
@@ -51,10 +58,7 @@
         insertbefore: 'exit 0'
       with_items:
         - ''
-        - 'DOMAIN=foo.com node /home/pi/index.js &
+        - 'DOMAIN=foo.com node /home/pi/index.js &'
         - ''
       become: true
       become_user: root
-
-
-  

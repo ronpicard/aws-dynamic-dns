@@ -11,6 +11,7 @@ const shell = require('child_process').spawnSync;
 
 const route = new aws.Route53();
 
+// get AWS hosted zone id
 const getHostedZoneDomainId = () => {
   return new Promise((resolve, reject) => {
     route.listHostedZones({}, (err, data) => {
@@ -27,6 +28,7 @@ const getHostedZoneDomainId = () => {
   });
 };
 
+// get current records from zone
 const getCurrentRecordSets = id => {
   return new Promise((resolve, reject) => {
     route.listResourceRecordSets({ HostedZoneId: id }, (err, data) => {
@@ -40,6 +42,7 @@ const getCurrentRecordSets = id => {
   });
 };
 
+// get current home public ip
 const getCurrentHomeIp = () => {
   const ip = shell('dig', [
     '+short',
@@ -49,6 +52,7 @@ const getCurrentHomeIp = () => {
   return ip.stdout.toString();
 };
 
+// update DNS
 const updateDNS = (id, ip) => {
   const params1 = {
     ChangeBatch: {
@@ -106,9 +110,8 @@ const updateDNS = (id, ip) => {
   });
 };
 
-
+// loop functions
 function repeat() {
-
   getHostedZoneDomainId().then(id => {
     const digIp = getCurrentHomeIp();
     getCurrentRecordSets(id).then(resourceRecordSets => {
